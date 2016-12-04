@@ -1,0 +1,282 @@
+<html>
+<head>
+ <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+ <script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+ <script src="data_sample.js"></script>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+  #courts { position:static; display:none; padding: 15px;}
+  #year-selector { position:static; display:none; padding: 15px;}
+  #titles { position:static; display:none; padding: 15px;}
+  #form {position:static; display:none; padding: 15px; width: 80%; margin: 0 auto;}
+  #text { position:static; display:none; padding: 15px;}
+  
+  a {color: black;
+    font-family: Arial;
+    text-decoration: none;
+    font-weight:bold;}
+  a:hover {color:lightblue;
+    text-decoration: underline;}
+</style>
+</head>
+<body>
+
+
+<div id='mapid' style='width: 100%; height: 270px;'></div>
+
+<div id='courts'>
+<a href="">Court of Appeal of Fiji (FJCA)</a>
+<a href="">High Court of Fiji (FJHC)</a>
+<a href="">Supreme Court of Fiji (FJSC)</a>
+<a href="">Fiji Magistrate’s Court (FJMC)</a>
+</div>
+
+<div id='year-selector'>
+  <a href="">2001</a>
+  <a href="">2002</a>
+  <a href="">2003</a>
+  <a href="">2004</a>
+  <a href="">2005</a>
+  <a href="">2006</a>
+  <a href="">2007</a>
+  <a href="">2008</a>
+  <a href="">2009</a>
+  <a href="">2010</a>
+  <a href="">2011</a>
+  <a href="">2012</a>
+  <a href="">2013</a>
+  <a href="">2014</a>
+</div>
+<div id="titles"></div>
+
+
+<div id="text">
+
+</div>
+
+<div id='form'>
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    <li>
+        <span aria-hidden="true">No indication of discrimination</span>
+    </li>
+    <li><a href="#">1</a></li>
+    <li><a href="#">2</a></li>
+    <li><a href="#">3</a></li>
+    <li><a href="#">4</a></li>
+    <li><a href="#">5</a></li>
+    <li>
+        <span aria-hidden="true">Clear indication of discrimination</span>
+    </li>
+  </ul>
+</nav>
+
+<div class="col-lg-3">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Comment">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button">Submit</button>
+      </span>
+    </div><!-- /input-group -->
+  </div><!-- /.col-lg-6 -->
+</div><!-- /.row -->
+
+</div>
+
+<script>
+var map = L.map('mapid').setView([6.916667 - 12, 158.25 + 20], 3);
+var tileLayer = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    maxZoom: 6,
+    id: 'mapbox.light',
+    accessToken: 'pk.eyJ1IjoibmFtYXRvaiIsImEiOiJjaWk0bW0zYXcwMDQ1dmNtMnhzb21vOXVjIn0.KUflnrb58f71M-j3INmVKQ'
+});
+tileLayer.addTo(map);
+console.log(map)
+
+var FlagIcon = L.Icon.extend({
+    options: {
+        iconSize:     [32, 18],
+        iconAnchor:   [16, 16],
+        popupAnchor:  [-3, -76]
+    }
+});
+
+var countries = {
+  'American Samoa': {'coord':[-14.3, -170.7 + 360], 'icon':new FlagIcon({iconUrl: 'resources/AS.GIF'})},
+  'CNMI': {'coord':[15.233333, 145.75], 'icon':new FlagIcon({iconUrl: 'resources/MP.GIF'})},
+  'Cook Islands': {'coord':[-21.233333, -159.766667 + 360], 'icon':new FlagIcon({iconUrl: 'resources/CK.GIF'})},
+  'Fiji': {'coord':[-18, 179], 'icon':new FlagIcon({iconUrl: 'resources/FJ.GIF'})},
+  'FSM': {'coord':[6.916667, 158.25], 'icon':new FlagIcon({iconUrl: 'resources/FSM.GIF'})},
+  'Guam': {'coord':[13.5, 144.8], 'icon':new FlagIcon({iconUrl: 'resources/GUAM.GIF'})},
+  'Kiribati': {'coord':[1.416667, 173], 'icon':new FlagIcon({iconUrl: 'resources/KI.GIF'})},
+  'Marshall Islands': {'coord':[1.416667, 173], 'icon':new FlagIcon({iconUrl: 'resources/MH.GIF'})},
+  'Nauru': {'coord':[0.533333, 166.933333], 'icon':new FlagIcon({iconUrl: 'resources/NR.GIF'})},
+  'Niue': {'coord':[-19.05, -169.916667 + 360], 'icon':new FlagIcon({iconUrl: 'resources/NU.GIF'})},
+  'Nouvelle Calédonie': {'coord':[-21.25, 165.3], 'icon':new FlagIcon({iconUrl: 'resources/NC.GIF'})},
+  'Palau': {'coord':[7.5, 134.5], 'icon':new FlagIcon({iconUrl: 'resources/PALAU.GIF'})},
+  'Papa New Guinea': {'coord':[-6, 147], 'icon':new FlagIcon({iconUrl: 'resources/PG.GIF'})},
+  'Pitcairn Islands':{'coord':[-25.066667, -130.1 + 360], 'icon':new FlagIcon({iconUrl: 'resources/PN.GIF'})},
+  'Samoa': {'coord':[-13.583333, -172.333333 + 360], 'icon':new FlagIcon({iconUrl: 'resources/WS.GIF'})},
+  'Solomon':{'coord':[-8, 159], 'icon':new FlagIcon({iconUrl: 'resources/SB.GIF'})},
+  'Tokelau':{'coord':[-9.166667, -171.833333 + 360], 'icon':new FlagIcon({iconUrl: 'resources/TK.GIF'})},
+  'Tonga':{'coord':[-20, -175 +360], 'icon':new FlagIcon({iconUrl: 'resources/TO.GIF'})},
+  'Tuvalu':{'coord':[-8, 178], 'icon':new FlagIcon({iconUrl: 'resources/TV.GIF'})},
+  'Vanuatu':{'coord':[-16, 167], 'icon':new FlagIcon({iconUrl: 'resources/VU.GIF'})}
+};
+
+
+var toggle_courts = true;
+
+console.log(countries)
+//var marker = L.marker(countries['Fiji']['coord']).addTo(map);
+for (var key in countries) {
+  marker = L.marker(countries[key]['coord'], {icon: countries[key]['icon']}).addTo(map);  
+  marker.on('click', function(e) {
+    console.log(e);
+    if(toggle_courts){
+      document.getElementById("courts").style.display = 'block';
+      toggle_courts = false;
+
+    } else {
+      document.getElementById("courts").style.display = 'none';
+      toggle_courts = true;
+
+    }
+  })
+}
+
+// YEARS
+var toggle_years = true;
+
+$('#courts a').click( function(e) {
+  e.preventDefault();
+  if(toggle_years){
+    document.getElementById("year-selector").style.display = 'block';
+    toggle_years = false;
+
+  } else {
+    console.log("toggle");
+    document.getElementById("year-selector").style.display = 'none';
+    toggle_years = true;
+
+  }
+  
+   console.log("click!");
+  return false; 
+ });
+
+var title_list = [];
+var text_list = [];
+for(id in data_sample.Year){
+  console.log()
+  if(data_sample.Year[id] === 2012){
+    console.log('You did right! Good boy!');
+    title_list.push(data_sample.title[id])
+    text_list.push(data_sample.text[id])
+  } else {
+    console.log("no 2012");
+  }
+}
+
+
+// TITLES
+var toggle_titles = true;
+
+$('#year-selector a').click( function(e) {
+  e.preventDefault();
+  if(toggle_titles){
+    document.getElementById("titles").style.display = 'block';
+    toggle_titles = false;
+
+    console.log(title_list);
+    for(key in title_list){
+      document.getElementById("titles").innerHTML += '<a href="" class="'+key+'">' + title_list[key] + '</a><br/>';
+      //document.getElementById("titles").innerHTML += '<a href="">' + title_list[key] + '</a><br/>';
+      add_event_listener();
+    console.log("click!");
+    }
+  } else {
+    console.log("toggle");
+    document.getElementById("titles").style.display = 'none';
+    document.getElementById("titles").innerHTML = '';
+    toggle_titles = true;
+
+  }
+
+ });
+
+function add_event_listener(){
+// TEXT
+var toggle_text = true;
+
+$('#titles a').click( function(e) {
+  console.log("Click registered!!!!!")
+  e.preventDefault();
+  if(toggle_text){
+    document.getElementById("text").style.display = 'block';
+    document.getElementById("form").style.display = 'block';
+    toggle_titles = false;
+
+    console.log("e:");
+    console.log(e);
+    document.getElementById("text").innerHTML = prettify(text_list[e.target.className]);
+    console.log("click!");
+
+  } else {
+    console.log("toggle");
+    document.getElementById("text").style.display = 'none';
+    document.getElementById("form").style.display = 'none';
+    toggle_text = true;
+  }
+ });
+}
+
+function prettify(text){
+  resulting_text = ""
+  segmented_text = text.split(/[\[\."ES]( \(?[0-9ivx]{1,2}[\.\]\)] )/g)
+  if(segmented_text.length == 1){
+    segmented_text = text.split(/[A-Za-z0-9 ]{5}[\."]( )/g, text);
+    for(var i=0; i < segmented_text.length; i++){
+      resulting_text = resulting_text.concat(segmented_text[i]+ "." + "<br/>");
+    }      
+    return resulting_text
+  }
+
+  //console.log(segmented_text);
+  for(var i=0; i < segmented_text.length; i++){
+    var prefix = "";
+    var suffix = ".";
+    if(i == 0){
+      prefix = "<strong>"
+      suffix = ".</strong>"
+    }
+    if(i%2 == 1){
+      resulting_text = resulting_text.concat("<p><b>" + segmented_text[i] + "</b> ")
+    } else {
+      resulting_text = resulting_text.concat(prefix + segmented_text[i]+ suffix + "</p>");
+    }
+  }
+  console.log(resulting_text)
+  return resulting_text;
+}
+
+</script>
+          
+</body>
+</html>
